@@ -1,4 +1,4 @@
-import React, { useState, FormEvent } from 'react';
+import React, { useState, useEffect, FormEvent } from 'react';
 import { FiChevronRight } from 'react-icons/fi'
 
 import api from '../../services/api';
@@ -15,10 +15,24 @@ interface RepoData {
   }
 }
 
+const STORAGE_KEY = '@GithubExplorer:repositories';
+
 const Dashboard: React.FC = () => {
-  const [repositories, setRepositories] = useState<RepoData[]>([]);
+  const [repositories, setRepositories] = useState<RepoData[]>(() => {
+    const storedRepos = localStorage.getItem(STORAGE_KEY);
+    if (storedRepos) {
+      return JSON.parse(storedRepos);
+    }
+
+    return [];
+  });
+
   const [newRepo, setNewRepo] = useState('');
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(repositories));
+  }, [repositories]);
 
   async function addNewRepoHandler(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
