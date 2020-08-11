@@ -1,50 +1,64 @@
-import React from 'react';
-import {FiChevronRight} from 'react-icons/fi'
+import React, { useState, FormEvent } from 'react';
+import { FiChevronRight } from 'react-icons/fi'
+
+import api from '../../services/api';
 
 import logo from '../../assets/logo.svg';
-import {Title, Form, Repositories} from './styles';
+import { Title, Form, Repositories } from './styles';
 
-const Dashboard: React.FC = () => (
-  <>
-    <img src={logo} alt="Github Explorer" />
+interface RepoData {
+  full_name: string,
+  description: string,
+  owner: {
+    login: string,
+    avatar_url: string
+  }
+}
 
-    <Title>Exploxe repositórios no Github</Title>
+const Dashboard: React.FC = () => {
+  const [repositories, setRepositories] = useState<RepoData[]>([]);
+  const [newRepo, setNewRepo] = useState('');
 
-    <Form>
-      <input type="text" placeholder="Digite o nome do repositório" />
-      <button type="submit">Pesquisar</button>
-    </Form>
+  async function addNewRepoHandler(event: FormEvent<HTMLFormElement>): Promise<void> {
+    event.preventDefault();
+    const response = await api.get<RepoData>(`/repos/${newRepo}`);
+    const repo = response.data;
+    setRepositories([...repositories, repo]);
+    setNewRepo('');
+  }
 
-    <Repositories>
-      <a href="#">
-        <img src="https://ui-avatars.com/api/?name=John+Doe" alt=""/>
-        <div>
-          <strong>repositorio</strong>
-          <p>descrição</p>
-        </div>
+  return (
 
-        <FiChevronRight size={24} />
-      </a>
-      <a href="#">
-        <img src="https://ui-avatars.com/api/?name=John+Doe" alt=""/>
-        <div>
-          <strong>repositorio</strong>
-          <p>descrição</p>
-        </div>
+    <>
+      <img src={logo} alt="Github Explorer" />
 
-        <FiChevronRight size={24} />
-      </a>
-      <a href="#">
-        <img src="https://ui-avatars.com/api/?name=John+Doe" alt=""/>
-        <div>
-          <strong>repositorio</strong>
-          <p>descrição</p>
-        </div>
+      <Title>Exploxe repositórios no Github</Title>
 
-        <FiChevronRight size={24} />
-      </a>
-    </Repositories>
-  </>
-);
+      <Form onSubmit={addNewRepoHandler}>
+        <input
+          type="text"
+          placeholder="Digite o nome do repositório"
+          onChange={(e) => setNewRepo(e.target.value)}
+          value={newRepo}
+        />
+        <button type="submit">Pesquisar</button>
+      </Form>
+
+      <Repositories>
+        {repositories.map(repo => (
+          <a key={repo.full_name} href="#">
+            <img src={repo.owner.avatar_url} alt={repo.owner.login} />
+            <div>
+              <strong>{repo.full_name}</strong>
+              <p>{repo.description}</p>
+            </div>
+
+            <FiChevronRight size={24} />
+          </a>
+        ))}
+      </Repositories>
+    </>
+  );
+};
 
 export default Dashboard;
