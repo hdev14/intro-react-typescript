@@ -4,7 +4,7 @@ import { FiChevronRight } from 'react-icons/fi'
 import api from '../../services/api';
 
 import logo from '../../assets/logo.svg';
-import { Title, Form, Repositories } from './styles';
+import { Title, Form, Error, Repositories } from './styles';
 
 interface RepoData {
   full_name: string,
@@ -18,13 +18,25 @@ interface RepoData {
 const Dashboard: React.FC = () => {
   const [repositories, setRepositories] = useState<RepoData[]>([]);
   const [newRepo, setNewRepo] = useState('');
+  const [error, setError] = useState('');
 
   async function addNewRepoHandler(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
-    const response = await api.get<RepoData>(`/repos/${newRepo}`);
-    const repo = response.data;
-    setRepositories([...repositories, repo]);
-    setNewRepo('');
+
+    if (!newRepo) {
+      setError("Digite o autor/name do repositório.");
+      return;
+    }
+
+    try {
+      const response = await api.get<RepoData>(`/repos/${newRepo}`);
+      const repo = response.data;
+      setRepositories([...repositories, repo]);
+      setNewRepo('');
+      setError('');
+    } catch(err) {
+      setError("Repositório não encontrado.");
+    }
   }
 
   return (
@@ -34,7 +46,7 @@ const Dashboard: React.FC = () => {
 
       <Title>Exploxe repositórios no Github</Title>
 
-      <Form onSubmit={addNewRepoHandler}>
+      <Form hasError={!!error} onSubmit={addNewRepoHandler}>
         <input
           type="text"
           placeholder="Digite o nome do repositório"
@@ -43,6 +55,8 @@ const Dashboard: React.FC = () => {
         />
         <button type="submit">Pesquisar</button>
       </Form>
+
+      {error && <Error>{error}</Error>}
 
       <Repositories>
         {repositories.map(repo => (
