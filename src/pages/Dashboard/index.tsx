@@ -8,12 +8,12 @@ import logo from '../../assets/logo.svg';
 import { Title, Form, Error, Repositories } from './styles';
 
 interface RepoData {
-  full_name: string,
-  description: string,
+  full_name: string;
+  description: string;
   owner: {
-    login: string,
-    avatar_url: string
-  }
+    login: string;
+    avatar_url: string;
+  };
 }
 
 const STORAGE_KEY = '@GithubExplorer:repositories';
